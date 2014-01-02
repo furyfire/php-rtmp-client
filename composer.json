@@ -9,7 +9,11 @@
         }
     ],
     "require": {
-        "php": ">=5.0.0"
+        "php": ">=5.0.0",
+        "sabre/amf": "dev-master"
     },
-    "license": "GPL-v3"
+    "license": "GPL-v3",
+    "autoload": {
+        "files": ["RtmpClient.class.php", "RtmpMessage.class.php", "RtmpOperation.class.php", "RtmpPacket.class.php", "RtmpSocket.class.php", "RtmpStream.class.php"]
+    }
 }
