@@ -495,7 +495,7 @@ class RtmpClient {
                 $h = array($this->client, $h);
             }
 
-            is_callable($h) && call_user_func_array($h, $op->getResponse()->arguments);
+            is_callable($h) && call_user_func_array($h, [$op->getResponse()->arguments]);
             $op->clearResponse();
 
             return;
