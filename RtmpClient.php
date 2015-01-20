@@ -455,9 +455,7 @@ class RtmpClient {
     }
 
     private function handle_windowAcknowledgementSize(RtmpPacket $p) {
-        $s = new RtmpStream($p->payload);
-        $size = $s->readInt32();
-        //TODO
+        $this->sendPacket($p);
         unset($this->operations[$p->chunkStreamId]);
     }
 
