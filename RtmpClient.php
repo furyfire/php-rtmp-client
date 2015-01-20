@@ -15,12 +15,21 @@ class RtmpClient {
     private $operations = array();
     private $connected = false;
     private $client;
-    public $handlers = array();
+    private $handlers;
+
+    function __construct($params)
+    {
+        $this->handlers = isset($params['handlers']) ? $params['handlers'] : [];
+    }
 
     public function setClient($client) {
         if (is_object($client) || is_null($client)) {
             $this->client = $client;
         }
+    }
+
+    public function setHandlers($handlers) {
+        $this->handlers = $handlers;
     }
 
     /**
