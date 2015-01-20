@@ -15,6 +15,7 @@ class RtmpClient {
     private $operations = array();
     private $connected = false;
     private $client;
+    public $handlers = array();
 
     public function setClient($client) {
         if (is_object($client) || is_null($client)) {
@@ -491,11 +492,7 @@ class RtmpClient {
             //Remote invoke from server
             $h = $op->getResponse()->commandName;
 
-            if ($this->client) {
-                $h = array($this->client, $h);
-            }
-
-            is_callable($h) && call_user_func_array($h, [$op->getResponse()->arguments]);
+            is_callable($this->handlers[$h]) && call_user_func_array($this->handlers[$h], [$op->getResponse()->arguments]);
             $op->clearResponse();
 
             return;
