@@ -434,7 +434,7 @@ class RtmpClient {
                     "capabilities" => 0.0,
                     "audioCodecs" => 0x01,
                     "videoCodecs" => 0xFF,
-                    "videoFunction" => 0,
+                    "videoFunction" => 1,
                     "pageUrl" => null,
                     "objectEncoding" => 0x03
                 ), $connectParams), array($this, "onConnect"))
