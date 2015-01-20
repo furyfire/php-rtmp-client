@@ -1,19 +1,26 @@
 {
-    "name": "qwantix/php-rtmp-client",
-    "type": "library",
-    "description": "A Rtmp client for PHP",
-    "authors": [
-        {
-            "name": "Brice Dauzats",
-            "email": "qwantix@gmail.com"
-        }
-    ],
-    "require": {
-        "php": ">=5.0.0",
-        "sabre/amf": "dev-master"
-    },
-    "license": "GPL-v3",
-    "autoload": {
-        "files": ["RtmpClient.class.php", "RtmpMessage.class.php", "RtmpOperation.class.php", "RtmpPacket.class.php", "RtmpSocket.class.php", "RtmpStream.class.php"]
+  "name": "qwantix/php-rtmp-client",
+  "type": "library",
+  "description": "A Rtmp client for PHP",
+  "authors": [
+    {
+      "name": "Brice Dauzats",
+      "email": "qwantix@gmail.com"
     }
+  ],
+  "require": {
+    "php": ">=5.0.0",
+    "sabre/amf": "dev-master"
+  },
+  "license": "GPL-v3",
+  "autoload": {
+    "files": [
+      "RtmpClient.php",
+      "RtmpMessage.php",
+      "RtmpOperation.php",
+      "RtmpPacket.php",
+      "RtmpSocket.php",
+      "RtmpStream.php"
+    ]
+  }
 }
