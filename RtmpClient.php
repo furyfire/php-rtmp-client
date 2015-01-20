@@ -38,6 +38,7 @@ class RtmpClient {
      * @param string $host
      * @param string $application
      * @param int $port
+     * @param mixed $connectParams
      */
     public function connect($host, $application, $port = 1935, $connectParams = null) {
         $this->close();
@@ -484,6 +485,9 @@ class RtmpClient {
     }
 
     private function handle_invoke(RtmpPacket $p) {
+        /**
+         * @var RtmpOperation $op
+         */
         $op = $this->operations[$p->chunkStreamId];
         $op->getResponse()->decode($p);
 
