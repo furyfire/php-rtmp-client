@@ -505,7 +505,7 @@ class RtmpClient {
             //Remote invoke from server
             $h = $op->getResponse()->commandName;
 
-            is_callable($this->handlers[$h]) && call_user_func_array($this->handlers[$h], [$op->getResponse()->arguments]);
+            isset($this->handlers[$h]) && is_callable($this->handlers[$h]) && call_user_func_array($this->handlers[$h], [$this, $op->getResponse()->arguments]);
             $op->clearResponse();
 
             return;
