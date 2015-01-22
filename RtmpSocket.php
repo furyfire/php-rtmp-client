@@ -11,6 +11,10 @@ class RtmpSocket {
 
     }
 
+    public function getSocket() {
+        return $this->socket;
+    }
+
     /**
      * Init socket
      *

@@ -116,6 +116,9 @@ class RtmpClient {
         $stop = false;
         $return = null;
         while (!$stop) {
+            if (get_resource_type($this->socket->getSocket()) !== 'Socket') {
+                exit;
+            }
             if ($p = $this->readPacket()) {
                 switch ($p->type) {
                     case RtmpPacket::TYPE_CHUNK_SIZE; //Chunk size
