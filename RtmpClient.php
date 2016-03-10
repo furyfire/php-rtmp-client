@@ -530,7 +530,7 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
         $this->logger->notice("Remote invoke from server", array($h));
 		if($this->client)
 			$h = array($this->client,$h);
-		is_callable($h) && call_user_func($h,$op->getResponse()->arguments);
+		is_callable($h) && call_user_func_array($h,(array)$op->getResponse()->arguments);
 		$op->clearResponse();
 		return;
         }
