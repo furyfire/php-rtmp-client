@@ -1,12 +1,17 @@
 <?php
 
+/**
+ * RTMPClient
+ * 
+ * The client connection class.
+ * Implements the PSR logging standard
+ */
 class RtmpClient implements Psr\Log\LoggerAwareInterface
 {
-
     use Psr\Log\LoggerAwareTrait;
 
     const RTMP_SIG_SIZE = 1536;
-
+    const AMF_VERSION = RtmpMessage::AMF3;
     /**
      * Socket object
      *
@@ -18,10 +23,45 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
     private $port;
     private $chunkSizeR = 128, $chunkSizeW = 128;
     private $operations = array();
+    /**
+     * @var bool Connection status
+     */
     private $connected  = false;
+    /**
+     * @var IRtmpClient Client
+     */
     private $client;
+    
+    /**
+     * Default connection settings for RtmpClient
+     * The app and tcUrl field are automatically generated before sending
+     * connect package.
+     * You can overwrite entries in connect() call.
+     * 
+     * @var array $default_settings
+     */
+    private $default_settings = array(
+        "flashVer" => "LNX 10,0,32,18",
+        "swfUrl" => null,
+        "fpad" => false,
+        "capabilities" => 0.0,
+        "audioCodecs" => 0x01,
+        "videoCodecs" => 0xFF,
+        "videoFunction" => 1,
+        "pageUrl" => null,
+        "objectEncoding" => 0x03
+    );
 
-    public function setClient($client)
+    /**
+     * Set the client
+     * 
+     * All remote invokes from the server will be forwarded to this class.
+     * It is highly suggested to implement a __call() to notify about unhandled 
+     * events in your client implementation.
+     * 
+     * @param IRtmpClient $client Client object 
+     */
+    public function setClient(IRtmpClient $client)
     {
         if (is_object($client) || is_null($client))
         {
@@ -32,11 +72,16 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
     /**
      * Connect
      *
-     * @param string $host
-     * @param string $application
-     * @param int $port
-     * @param array $connect_settings Overwrite Connection settings
-     * @param mixed $connectParams
+     * Connects to a given RTMP server supplying the hostname, application path
+     * and port number. 
+     * The default connect settings are overwriteable by setting individual array
+     * keys.
+     * 
+     * @param string $host Remote host or IP address
+     * @param string $application RTMP application path
+     * @param int $port Port the RMTP server is running on
+     * @param array $connect_settings Connection parameter overwrite
+     * @param mixed $connectParams Application specific connect parameters
      */
     public function connect($host, $application, $port = 1935,
                             $connect_settings = null, $connectParams = null)
@@ -48,7 +93,6 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
         $this->port        = $port;
 
         if ($this->initSocket()) {
-            $aReadSockets = array($this->socket);
             $this->handshake();
             $this->send_ConnectPacket($connect_settings, $connectParams);
         }
@@ -57,6 +101,7 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
     /**
      * Close connection
      *
+     * Gracefully close the connect and restore chunksize.
      */
     public function close()
     {
@@ -67,11 +112,12 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
     /**
      * Call remote procedure (RPC)
      *
-     * @param string $procedureName
-     * @param array $args array of arguments, null if not args
-     * @param callback $handler
-     *
-     * @return mixed result of RPC
+     * Call a method on the RTMP server 
+     * @param string $procedureName Method name
+     * @param array $args Array of arguments, null if no arguments
+     * @param callback $handler Callback class
+     * @todo Add check so you do not overwrite a pending operation
+     * @return mixed Result of RPC
      */
     public function call($procedureName, array $args = null, $handler = null)
     {
@@ -81,6 +127,11 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
                                                                       $handler));
     }
 
+    /**
+     * Magic wrapper forwarding to call()
+     * 
+     * @see call()
+     */
     public function __call($name, $arguments)
     {
         return $this->call($name, $arguments);
@@ -105,17 +156,22 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
         return $this->socket->write($data, $n);
     }
 
-    //-------------------------------------
-
+    /**
+     * @internal
+     * @var bool Already listening
+     */
     private $listening = false;
 
     /**
-     * listen socket
+     * Listen for incomming packages
+     * 
+     * Call this from a loop to maintain a persistant connection
      *
-     * @return mixed last result
+     * @return mixed Last result
      */
     function listen()
     {
+        //Prevents listening more than once
         if ($this->listening)
             return;
         if (!$this->socket)
@@ -124,6 +180,7 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
         $stop            = false;
         $return          = null;
         while (!$stop) {
+            //Check that our socket is still open
             if (get_resource_type($this->socket->getSocket()) !== 'Socket') {
                 exit;
             }
@@ -133,7 +190,6 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
                         $this->handle_setChunkSize($p);
                         break;
                     case RtmpPacket::TYPE_READ_REPORT: //Bytes Read
-
                         break;
                     case RtmpPacket::TYPE_PING: //Ping
                         $this->handle_ping($p);
@@ -163,11 +219,11 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
                     case RtmpPacket::TYPE_FLV_TAGS:
 
                         break;
-                    case RtmpPacket::TYPE_AGGREGATE: //agregate
+                    case RtmpPacket::TYPE_AGGREGATE: //Agregate
 
                         break;
                     default:
-
+                        $this->logger->warn("Unknown RTMP Packet Type",(array)$p);
                         break;
                 }
             }
@@ -292,11 +348,11 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
      * Send packet
      *
      * @param RtmpPacket $packet
-     * @return bool
+     * @throws Exception On general error
+     * @return bool True On success
      */
     private function sendPacket(RtmpPacket $packet)
     {
-
         if (!$packet->length)
             $packet->length = strlen($packet->payload);
         if (isset($this->prevSendingPacket[$packet->chunkStreamId])) {
@@ -333,7 +389,7 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
         $headerSize = $packet->length;
         $buffer     = new RtmpStream($packet->payload);
 
-
+        //Push out while not going above chunkSize
         while ($headerSize) {
             $chunkSize = $packet->type == RtmpPacket::TYPE_INVOKE_AMF0 || $packet->type == RtmpPacket::TYPE_INVOKE_AMF3 ? $this->chunkSizeW : $packet->length;
             if ($headerSize < $this->chunkSizeW)
@@ -365,18 +421,18 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
     //		RTMP Methods
     //------------------------------------
     /**
-     * Perform handshake
+     * Perform handshake intial handshake
      *
      */
     private function handshake()
     {
-        ///	Send C0, the version
+        //Send C0, the version
         $stream = new RtmpStream();
 
         $stream->writeByte("\x03"); //"\x03";
         $this->socketWrite($stream);
 
-        ///	Send C1
+        //Send C1
         $ctime = time();
         $stream->writeInt32($ctime); //Time
         $stream->write("\x80\x00\x03\x02"); //Zero zone? Flex put : 0x80 0x00 0x03 0x02, maybe new handshake style?
@@ -388,14 +444,14 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
         $stream->write($crandom);
         $this->socketWrite($stream);
 
-        ///Read S0
+        //Read S0
         $s0 = $this->socketRead(1)->readTinyInt();
         if ($s0 != 0x03)
             throw new Exception("Packet version " . $s0 . " not supported");
         ///Read S1
         $s1 = $this->socketRead(self::RTMP_SIG_SIZE);
 
-        ///Send C2
+        //Send C2
         $c2  = new RtmpStream();
         $c2->writeInt32($s1->readInt32());
         $s1->readInt32();
@@ -414,20 +470,10 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
 
     private function send_ConnectPacket($connectSettings, $connectParams = null)
     {
-        $default_settings = array(
-            "app"            => $this->application,
-            "flashVer"       => "LNX 10,0,32,18",
-            "swfUrl"         => null,
-            "tcUrl"          => "rtmp://$this->host:$this->port/$this->application",
-            "fpad"           => false,
-            "capabilities"   => 0.0,
-            "audioCodecs"    => 0x01,
-            "videoCodecs"    => 0xFF,
-            "videoFunction"  => 1,
-            "pageUrl"        => null,
-            "objectEncoding" => 0x03
-        );
-        $settings         = array_merge($default_settings, $connectSettings);
+        $this->default_settings["app"] = $this->application;
+        $this->default_settings["tcUrl"] = "rtmp://$this->host:$this->port/$this->application";
+        
+        $settings = array_merge($this->default_settings, $connectSettings);
         $this->sendOperation(
             new RtmpOperation(new RtmpMessage("connect", (object) $settings,
                                               $connectParams),
@@ -435,47 +481,20 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
         );
     }
 
-    private function send_SetChunkSize()
-    {
-
-    }
-
-    private function send_AbortMessage()
-    {
-
-    }
-
-    private function send_Acknowledgement()
-    {
-
-    }
-
-    private function send_UserControlMessage()
-    {
-
-    }
-
-    private function send_WindowAcknowledgementSize()
-    {
-
-    }
-
-    private function send_SetPeerBandwidth()
-    {
-
-    }
-
     private function handle_ping(RtmpPacket $p)
     {
-
         $s    = new RtmpStream($p->payload);
-        $s->readTinyInt();
+        $junk = $s->readTinyInt();
         $type = $s->readTinyInt();
-        $this->logger->debug("PING",array($type));
-        if ($type == 6) {
-            $p->payload[1] = chr(7);
-            $this->sendPacket($p);
-
+        switch($type) {
+            case RtmpPing::PING_CLIENT:
+                $this->logger->debug("PING", array($type));
+                $p->payload[1] = chr(RtmpPing::PONG_SERVER);
+                $this->sendPacket($p);
+                break;
+            default:
+                $this->logger->warn("Unhandled ping package",[$type]);
+                break;
         }
         unset($this->operations[$p->chunkStreamId]);
     }
@@ -526,12 +545,14 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
         } else {
 
 		//Remote invoke from server
-		$h = $op->getResponse()->commandName;
-        $this->logger->notice("Remote invoke from server", array($h));
-		if($this->client)
-			$h = array($this->client,$h);
-		is_callable($h) && call_user_func_array($h,(array)$op->getResponse()->arguments);
-		$op->clearResponse();
+		$method = $op->getResponse()->commandName;
+                $this->logger->notice("Remote invoke from server", array($method));
+		if($this->client) {
+                    $h = array($this->client,$method);
+                    $data = $op->getResponse()->arguments instanceof SabreAMF_AMF3_Wrapper ? $op->getResponse()->arguments->getData() : $op->getResponse()->arguments;
+                    is_callable($h) && call_user_func($h,$data);
+                }
+                $op->clearResponse();
 		return;
         }
     }
@@ -546,6 +567,7 @@ class RtmpClient implements Psr\Log\LoggerAwareInterface
      */
     public function onConnect(RtmpOperation $m)
     {
+        $this->logger->info("Connected");
         $this->connected = true;
         unset($this->prevSendingPacket[$m->getResponse()->getPacket()->chunkStreamId]);
     }

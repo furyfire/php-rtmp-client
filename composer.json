@@ -10,7 +10,8 @@
   ],
   "require": {
     "php": ">=5.0.0",
-    "sabre/amf": "dev-master"
+    "sabre/amf": "dev-master",
+    "psr/log": "1.0.0"
   },
   "license": "GPL-v3",
   "autoload": {
