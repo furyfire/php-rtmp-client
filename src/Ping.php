@@ -1,14 +1,17 @@
 <?php
 
+namespace RTMP;
+
 /**
  * Description of RtmpPing
  * @see http://red5.org/javadoc/red5-server-common/serialized-form.html#org.red5.server.net.rtmp.event.Ping
  * @see https://github.com/Red5/red5-server-common/blob/master/src/main/java/org/red5/server/net/rtmp/event/Ping.java
  * 
  */
-class RtmpPing {
+class Ping
+{
     //ping types
-  
+
     /**
      * Stream begin / clear event
      */
@@ -73,5 +76,4 @@ class RtmpPing {
      * Buffer full.
      */
     const BUFFER_FULL = 32;
-
 }

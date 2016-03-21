@@ -1,6 +1,9 @@
 <?php
 
-class RtmpPacket {
+namespace RTMP;
+
+class Packet
+{
 
     const MAX_HEADER_SIZE = 12;
     // packet types
@@ -22,7 +25,7 @@ class RtmpPacket {
     const CHUNK_TYPE_2 = 2; //Small
     const CHUNK_TYPE_3 = 3; //Minimal
 
-    public static $SIZES = array(12, 8, 4, 1);
+    public static $sizes = array(12, 8, 4, 1);
     public $chunkType = 0;
     public $chunkStreamId = 0;
     public $timestamp = 0;
@@ -33,7 +36,8 @@ class RtmpPacket {
     public $bytesRead = 0;
     public $payload = null;
 
-    public function reset() {
+    public function reset()
+    {
         $this->chunkType = 0;
         $this->chunkStreamId = 0;
         $this->timestamp = 0;
@@ -45,11 +49,13 @@ class RtmpPacket {
         $this->payload = null;
     }
 
-    public function free() {
+    public function free()
+    {
         $this->payload = null;
     }
 
-    public function isReady() {
+    public function isReady()
+    {
         return $this->bytesRead == $this->length;
     }
 

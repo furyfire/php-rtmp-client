@@ -1,11 +1,32 @@
 <?php
 
-$autoload = require __DIR__ . '/vendor/autoload.php';
+include "vendor\autoload.php";
+
+
+
 require __DIR__ . '/debug.php';
 
-$client = new RtmpClient();
-$client->connect("localhost", "myApp");
+$client = new \RTMP\Client();
 
-$result = $client->call("myMethod");
+$client->setLogger(new Psr\Log\NullLogger);
 
-var_dump($result);
+$client->connect("s3b78u0kbtx79q.cloudfront.net", "cfx");
+
+//$result = $client->_play("st");
+//var_dump($result);
+while (1) {
+    $client->listen();
+}
+
+
+
+    /*
+} catch (RtmpRemoteException $exc) {
+    echo "Server sent error:";
+    echo $exc->getMessage();
+    echo PHP_EOL;
+}
+catch (Exception $exc) {
+    echo $exc->getTraceAsString();
+    echo $exc->getMessage();
+}*/

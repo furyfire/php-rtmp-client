@@ -15,13 +15,6 @@
   },
   "license": "GPL-v3",
   "autoload": {
-    "files": [
-      "RtmpClient.php",
-      "RtmpMessage.php",
-      "RtmpOperation.php",
-      "RtmpPacket.php",
-      "RtmpSocket.php",
-      "RtmpStream.php"
-    ]
+        "psr-4": {"RTMP\\": "src/"}
   }
 }
