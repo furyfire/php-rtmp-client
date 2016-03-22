@@ -5,25 +5,32 @@ namespace RTMP;
 class Socket
 {
 
-    private $host;
-    private $port;
-
     /**
      * @var resource stream socket connection
      */
     private $socket;
+    
+    /**
+     * Timeout in seconds for socket reads
+     * @var int  
+     */
     public $timeout = 15;
 
-    public function __construct()
-    {
-        
-    }
-
+    /**
+     * Get the current Stream Network socket
+     * 
+     * @return resource Stream Socket connection
+     */
     public function getSocket()
     {
         return $this->socket;
     }
 
+    /**
+     * Get the current status of the network socket
+     * 
+     * @return bool True if socket is open
+     */
     public function isOpen()
     {
         return !stream_get_meta_data($this->socket)['eof'];
@@ -37,11 +44,11 @@ class Socket
     public function connect($host, $port)
     {
         $this->close();
-        $this->host = $host;
-        $this->port = $port;
-
 
         $addr = gethostbyname($host);
+        if ($addr === $host) {
+            throw new \Exception("Could not resolve: $host");
+        }
 
         $this->socket = @stream_socket_client("tcp://" . $addr . ":" . $port, $errno, $errorMessage);
 
@@ -55,8 +62,8 @@ class Socket
             throw new \Exception("Unable to create socket.");
         }
 
-        if (!socket_connect($this->socket, $this->host, $this->port)) {
-            throw new \Exception("Could not connect to $this->host:$this->port");
+        if (!socket_connect($this->socket, $host, $port)) {
+            throw new \Exception("Could not connect to $host:$port");
         }
 
         return $this->socket != null;
@@ -77,7 +84,7 @@ class Socket
      * Read socket
      *
      * @param int $length
-     * @return RtmpStream
+     * @return Stream
      */
     public function read($length)
     {
@@ -88,7 +95,7 @@ class Socket
             $recv = fread($this->socket, $length - strlen($buff));
             //$recv = socket_read($this->socket, $length - strlen($buff), PHP_BINARY_READ);
             if ($recv === false) {
-                throw new Exception("Could not read socket");
+                throw new \Exception("Could not read socket");
             }
 
             if ($recv != "") {
@@ -96,7 +103,7 @@ class Socket
             }
 
             if (time() > $time + $this->timeout) {
-                throw new Exception("Timeout, could not read socket");
+                throw new \Exception("Timeout, could not read socket");
             }
         } while ($recv != "" && strlen($buff) < $length);
         $this->recvBuffer = substr($buff, $length);
@@ -106,7 +113,7 @@ class Socket
     /**
      * Write data
      *
-     * @param RtmpStream $data
+     * @param Stream $data
      * @param int $length Length to write
      * @return bool
      */
@@ -131,5 +138,4 @@ class Socket
         }
         return true;
     }
-
 }

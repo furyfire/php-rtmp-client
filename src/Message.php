@@ -121,7 +121,9 @@ class Message
 
     public function isError()
     {
-        if (($this->commandName == "_error") || (is_array($this->arguments) && !empty($this->arguments) && isset($this->arguments['level']) && ($this->arguments['level'] == 'error'))) {
+        if (($this->commandName == "_error") || (is_array($this->arguments) &&
+                !empty($this->arguments) && isset($this->arguments['level']) &&
+                ($this->arguments['level'] == 'error'))) {
             return true;
         }
         return false;

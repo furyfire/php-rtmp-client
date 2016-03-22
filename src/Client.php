@@ -10,11 +10,17 @@ namespace RTMP;
  */
 class Client implements \Psr\Log\LoggerAwareInterface
 {
-
     use \Psr\Log\LoggerAwareTrait;
-
-    const RTMP_SIG_SIZE = 1536;
+    
+    /**
+     * AMF version in use
+     */
     const AMF_VERSION = Message::AMF3;
+    /**
+     * RTMP Signature size
+     */
+    const RTMP_SIG_SIZE = 1536;
+    
 
     /**
      * Socket object
@@ -65,6 +71,7 @@ class Client implements \Psr\Log\LoggerAwareInterface
      * All remote invokes from the server will be forwarded to this class.
      * It is highly suggested to implement a __call() to notify about unhandled 
      * events in your client implementation.
+     * Implements the ClientInterface
      * 
      * @param ClientInterface $client Client object 
      */
@@ -96,7 +103,7 @@ class Client implements \Psr\Log\LoggerAwareInterface
      * @param string $host Remote host or IP address
      * @param string $application RTMP application path
      * @param int $port Port the RMTP server is running on
-     * @param array $connect_settings Connection parameter overwrite
+     * @param array $connectSettings Connection parameter overwrite
      * @param mixed $connectParams Application specific connect parameters
      */
     public function connect($host, $application, $port = 1935, $connectSettings = null, $connectParams = null)

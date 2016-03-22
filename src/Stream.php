@@ -153,5 +153,4 @@ class Stream
         $this->index += $size;
         return $val[1];
     }
-
 }

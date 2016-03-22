@@ -68,5 +68,4 @@ class Operation
             call_user_func($this->handler, $this);
         }
     }
-
 }

@@ -2,9 +2,11 @@
 
 namespace RTMP;
 
+/**
+ * Representation of a single RTMP packet
+ */
 class Packet
 {
-
     const MAX_HEADER_SIZE = 12;
     // packet types
     const TYPE_CHUNK_SIZE = 0x01;
@@ -36,6 +38,9 @@ class Packet
     public $bytesRead = 0;
     public $payload = null;
 
+    /**
+     * Reset packet
+     */
     public function reset()
     {
         $this->chunkType = 0;
@@ -49,14 +54,21 @@ class Packet
         $this->payload = null;
     }
 
+    /**
+     * Clear the payload
+     */
     public function free()
     {
         $this->payload = null;
     }
 
+    /**
+     * Check if the number of bytes read mactches the packet size
+     * 
+     * @return bool True if packet is ready
+     */
     public function isReady()
     {
         return $this->bytesRead == $this->length;
     }
-
 }
