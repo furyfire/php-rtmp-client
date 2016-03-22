@@ -2,16 +2,10 @@
 
 namespace RTMP;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
- * Description of Exceptions
+ * Remote server exception
  *
- * @author jckt
+ * Exception thrown when the remote server returns an _error invokation
  */
 class RemoteException extends \Exception
 {

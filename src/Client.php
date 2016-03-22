@@ -3,7 +3,7 @@
 namespace RTMP;
 
 /**
- * RTMPClient
+ * PHP RTMP Client
  * 
  * The client connection class.
  * Implements the PSR logging standard
@@ -21,7 +21,6 @@ class Client implements \Psr\Log\LoggerAwareInterface
      */
     const RTMP_SIG_SIZE = 1536;
     
-
     /**
      * Socket object
      *
@@ -453,7 +452,7 @@ class Client implements \Psr\Log\LoggerAwareInterface
         return true;
     }
 
-    protected function sendOperation(Operation $operation)
+    private function sendOperation(Operation $operation)
     {
         $this->operations[$operation->getChunkStreamID()] = $operation;
         $this->sendPacket($operation->getCall()->getPacket());
