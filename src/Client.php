@@ -3,15 +3,15 @@
 namespace RTMP;
 
 /**
- * RTMPClient
- * 
+ * RTMP Client
+ *
  * The client connection class.
  * Implements the PSR logging standard
  */
 class Client implements \Psr\Log\LoggerAwareInterface
 {
     use \Psr\Log\LoggerAwareTrait;
-    
+
     /**
      * AMF version in use
      */
@@ -20,7 +20,7 @@ class Client implements \Psr\Log\LoggerAwareInterface
      * RTMP Signature size
      */
     const RTMP_SIG_SIZE = 1536;
-    
+
 
     /**
      * Socket object
@@ -50,7 +50,7 @@ class Client implements \Psr\Log\LoggerAwareInterface
      * The app and tcUrl field are automatically generated before sending
      * connect package.
      * You can overwrite entries in connect() call.
-     * 
+     *
      * @var array $default_settings
      */
     private $DefaultConnectSettings = array(
@@ -67,13 +67,13 @@ class Client implements \Psr\Log\LoggerAwareInterface
 
     /**
      * Set the client
-     * 
+     *
      * All remote invokes from the server will be forwarded to this class.
-     * It is highly suggested to implement a __call() to notify about unhandled 
+     * It is highly suggested to implement a __call() to notify about unhandled
      * events in your client implementation.
      * Implements the ClientInterface
-     * 
-     * @param ClientInterface $client Client object 
+     *
+     * @param ClientInterface $client Client object
      */
     public function setClient(ClientInterface $client)
     {
@@ -81,10 +81,10 @@ class Client implements \Psr\Log\LoggerAwareInterface
             $this->client = $client;
         }
     }
-    
+
     /**
      * Connection status
-     * 
+     *
      * @return bool True if connected
      */
     public function isConnected()
@@ -96,10 +96,10 @@ class Client implements \Psr\Log\LoggerAwareInterface
      * Connect
      *
      * Connects to a given RTMP server supplying the hostname, application path
-     * and port number. 
+     * and port number.
      * The default connect settings are overwriteable by setting individual array
      * keys.
-     * 
+     *
      * @param string $host Remote host or IP address
      * @param string $application RTMP application path
      * @param int $port Port the RMTP server is running on
@@ -134,7 +134,7 @@ class Client implements \Psr\Log\LoggerAwareInterface
     /**
      * Call remote procedure (RPC)
      *
-     * Call a method on the RTMP server 
+     * Call a method on the RTMP server
      * @param string $procedureName Method name
      * @param array $args Array of arguments, null if no arguments
      * @param callback $handler Callback class
@@ -148,7 +148,7 @@ class Client implements \Psr\Log\LoggerAwareInterface
 
     /**
      * Magic wrapper forwarding to call()
-     * 
+     *
      * @see call()
      */
     public function __call($name, $arguments)
@@ -183,7 +183,7 @@ class Client implements \Psr\Log\LoggerAwareInterface
 
     /**
      * Listen for incomming packages
-     * 
+     *
      * Call this from a loop to maintain a persistant connection
      *
      * @return mixed Last result
@@ -309,7 +309,7 @@ class Client implements \Psr\Log\LoggerAwareInterface
 
         //If not operation exists, create it
         if (!isset($this->operations[$packet->chunkStreamId])) {
-            $this->operations[$packet->chunkStreamId] = new RtmpOperation();
+            $this->operations[$packet->chunkStreamId] = new Operation();
         }
 
         if ($this->operations[$packet->chunkStreamId]->getResponse()) {
@@ -515,14 +515,14 @@ class Client implements \Psr\Log\LoggerAwareInterface
 
     private function sendConnectPacket($connectSettings = null, $connectParams = null)
     {
-        $this->default_settings["app"] = $this->application;
-        $this->default_settings["tcUrl"] = "rtmp://$this->host:$this->port/$this->application";
-        
+        $this->DefaultConnectSettings["app"] = $this->application;
+        $this->DefaultConnectSettings["tcUrl"] = "rtmp://$this->host:$this->port/$this->application";
+
         $settings = $connectSettings;
         if (is_array($connectSettings)) {
             $settings = array_merge($this->DefaultConnectSettings, $connectSettings);
         }
-        
+
         $this->sendOperation(
             new Operation(new Message("connect", (object) $settings, $connectParams), array($this, "onConnect"))
         );
