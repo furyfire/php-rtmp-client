@@ -539,7 +539,7 @@ class Client implements \Psr\Log\LoggerAwareInterface
                 $this->sendPacket($packet);
                 break;
             default:
-                $this->logger->warn("Unhandled ping package", [$type]);
+                $this->logger->warning("Unhandled ping package", [$type]);
                 break;
         }
         unset($this->operations[$packet->chunkStreamId]);

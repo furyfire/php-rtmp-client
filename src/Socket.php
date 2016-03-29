@@ -46,7 +46,7 @@ class Socket
         $this->close();
 
         $addr = gethostbyname($host);
-        if ($addr === $host) {
+        if ($addr === $host && ip2long($host) === false) {
             throw new \Exception("Could not resolve: $host");
         }
 

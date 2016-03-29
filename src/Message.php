@@ -25,7 +25,7 @@ class Message
     /**
      * getPacket
      *
-     * @return RtmpPacket
+     * @return \RTMP\Packet
      */
     public function getPacket()
     {
@@ -39,7 +39,7 @@ class Message
 
     public function getData()
     {
-        if ($this->arguments instanceof \SabreAMF_AMF3_Wrapper) {
+        if ($this->arguments instanceof \SabreAMF\AMF3\Wrapper) {
             return $this->arguments->getData();
         } else {
             return $this->arguments;
@@ -67,8 +67,8 @@ class Message
         $packet->chunkType = Packet::CHUNK_TYPE_0;
         $packet->type = $amfVersion == Message::AMF0 ? Packet::TYPE_INVOKE_AMF0 : Packet::TYPE_INVOKE_AMF3; //Invoke
         //Encoding payload
-        $stream = new \SabreAMF_OutputStream();
-        $serializer = new \SabreAMF_AMF0_Serializer($stream);
+        $stream = new \SabreAMF\OutputStream();
+        $serializer = new \SabreAMF\AMF0\Serializer($stream);
         $serializer->writeAMFData($this->commandName);
         $serializer->writeAMFData($this->transactionId);
         $serializer->writeAMFData($this->commandObject);
@@ -101,11 +101,11 @@ class Message
             $amfVersion = Message::AMF0;
         }
 
-        $stream = new \SabreAMF_InputStream($packet->payload);
+        $stream = new \SabreAMF\InputStream($packet->payload);
         if ($amfVersion == Message::AMF0) {
-            $deserializer = new \SabreAMF_AMF0_Deserializer($stream);
+            $deserializer = new \SabreAMF\AMF0\Deserializer($stream);
         } else {
-            $deserializer = new \SabreAMF_AMF3_Deserializer($stream);
+            $deserializer = new \SabreAMF\AMF3\Deserializer($stream);
         }
            
         $this->commandName = $deserializer->readAMFData();
