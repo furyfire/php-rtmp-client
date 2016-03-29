@@ -56,17 +56,6 @@ class Socket
             throw new \Exception("Failed to connect: [$errno] $errorMessage");
         }
         return true;
-
-
-        if (($this->socket = socket_create(AF_INET, SOCK_STREAM, 0)) == false) {
-            throw new \Exception("Unable to create socket.");
-        }
-
-        if (!socket_connect($this->socket, $host, $port)) {
-            throw new \Exception("Could not connect to $host:$port");
-        }
-
-        return $this->socket != null;
     }
 
     /**

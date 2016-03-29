@@ -1,20 +1,28 @@
 {
-  "name": "qwantix/php-rtmp-client",
-  "type": "library",
-  "description": "A Rtmp client for PHP",
-  "authors": [
-    {
-      "name": "Brice Dauzats",
-      "email": "qwantix@gmail.com"
+    "name": "qwantix/php-rtmp-client",
+    "type": "library",
+    "description": "A Rtmp client for PHP",
+    "authors": [
+        {
+            "name": "Brice Dauzats",
+            "email": "qwantix@gmail.com"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/furyfire/SabreAMF"
+        }
+    ],
+    "require": {
+        "php": ">=5.0.0",
+        "sabre/amf": "dev-rework",
+        "psr/log": "1.0.0"
+    },
+    "license": "GPL-v3",
+    "autoload": {
+        "psr-4": {
+            "RTMP\\": "src/"
+        }
     }
-  ],
-  "require": {
-    "php": ">=5.0.0",
-    "sabre/amf": "dev-master",
-    "psr/log": "1.0.0"
-  },
-  "license": "GPL-v3",
-  "autoload": {
-        "psr-4": {"RTMP\\": "src/"}
-  }
 }
